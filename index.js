@@ -34,19 +34,37 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // static files
 app.use(express.static('public'))
 
-
-
-
 // Routing
 // include routes
 const routes = require('./routes/router');
 app.use('/', routes);
 
+const server = app.listen(port, () => console.log(`Node app listening on port ${port}!`));
 
 
 
 
+//socket.io instantiation
+const io = require("socket.io")(server)
+//listen on every connection
+io.on('connection', (socket) => {
+  console.log('New user connected')
 
+  // TODO - перенести изначальное определение юзера на бэкенд
+  //listen on change_username
+  socket.on('change_username', (data) => {
+    socket.username = data.username
+  })
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+  //listen on new_message
+  socket.on('new_message', (data) => {
+    //broadcast the new message
+    io.sockets.emit('new_message', { message: data.message, className: data.className, username: socket.username });
+  })
 
+  //listen on typing
+  socket.on('typing', (data) => {
+    socket.broadcast.emit('typing', { username: socket.username })
+  })
+
+})

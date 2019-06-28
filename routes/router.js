@@ -111,21 +111,21 @@ router.get('/lobby', authChecker, (req, res) =>
     }
   })
 );
-router.get('/room/:id', authChecker, (req, res) => {
-  const id = Number(req.params.id);
-  User.findById(req.session.userId).exec((error, user) => {
-    if (!error && user !== null) {
-      res.render('room', { user, id })
-    }
-  })
-});
-// router.get('/room', authChecker, (req, res) => {
+// router.get('/room/:id', authChecker, (req, res) => {
+//   const id = Number(req.params.id);
 //   User.findById(req.session.userId).exec((error, user) => {
 //     if (!error && user !== null) {
-//       res.render('room', { user })
+//       res.render('room', { user, id })
 //     }
 //   })
 // });
+router.get('/room', authChecker, (req, res) => {
+  User.findById(req.session.userId).exec((error, user) => {
+    if (!error && user !== null) {
+      res.render('room', { user, id: 0 })
+    }
+  })
+});
 
 router.get('/', (req, res) => {
   res.redirect('/lobby');

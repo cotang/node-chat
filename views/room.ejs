@@ -15,22 +15,19 @@
     <h2 class="block-panel-heading">Room #<%= id %></h2>
     <div class="row message-input">
       <div class="col-lg-12">
-        <div class="input-group">
-          <span class="input-group-btn">
-            <button class="btn btn-default" type="button">Send</button>
-          </span>
-          <input type="text" class="form-control">
-        </div>
+        <form id="chatMessageForm" action="" method="" autocomplete="off">
+          <div class="input-group">
+            <span class="input-group-btn">
+              <button class="btn btn-default" type="submit">Send</button>
+            </span>
+            <input type="text" id="chatMessage" class="form-control" placeholder="Write your message">
+          </div>
+        </form>
       </div>
     </div>
     <div class="panel panel-default">
       <div class="panel-body chat-body">
-        <span class="message"><span class="user" style="color: #0A6">User#1</span>: Hello.</span>
-        <span class="message"><span class="user" style="color: #A00">User#2</span>: Hi!</span>
-        <span class="message"><span class="user" style="color: #06F">Alien</span>: Greatings, earthlings! I come in
-          peace. Klaatu barada nikto. Here is my <a href="#">gift</a> to humanity</span>
-        <span class="message"><span class="user" style="color: #A00">User#2</span>: Wow!</span>
-        <span class="message"><span class="user" style="color: #0A6">User#1</span>: Radical, dude!</span>
+        <div id="process"></div>
       </div>
     </div>
   </div>
@@ -38,8 +35,70 @@
   <script src="https://code.jquery.com/jquery.js"></script>
   <!-- Include all compiled plugins (below), or include individual files as needed -->
   <script src="/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
   <script>
+    function defineClass() {
+      var definedClass;
+      var min = 1;
+      var max = 6;
+      var random = Math.floor(Math.random() * (max - min)) + min;
+      switch (random) {
+        case 1:
+          definedClass = 'primary';
+          break;
+        case 2:
+          definedClass = 'danger';
+          break;
+        case 3:
+          definedClass = 'success';
+          break;
+        case 4:
+          definedClass = 'warning';
+          break;
+        case 5:
+          definedClass = 'info';
+          break;
+        case 6:
+          definedClass = 'muted';
+          break;
+      }
+      return definedClass;
+    }
+    var alertClass = defineClass();
 
+    $(function () {
+      var socket = io.connect('http://localhost:8100');
+      var messageField = $('#chatMessage');
+
+      // TODO - перенести изначальное определение юзера на бэкенд
+      socket.emit('change_username', { username: $("#user").text() })
+
+      //Emit message
+      $('#chatMessageForm').submit(function (ev) {
+        ev.preventDefault();
+        if (messageField.val()) {
+          socket.emit('new_message', { message: messageField.val(), className: alertClass })
+        }
+      });
+
+      //Listen on new_message
+      socket.on("new_message", (data) => {
+        $('#process').html('');
+        messageField.val('');
+        $('.chat-body').append("<span class='message'><span class='user text-" + data.className + "'>" + data.username + "</span>: " + data.message + "</span>")
+      });
+
+
+      //Emit typing
+      messageField.bind("keypress", () => {
+        socket.emit('typing')
+      })
+      //Listen on typing
+      socket.on('typing', (data) => {
+        $('#process').html("<p><i>" + data.username + " is typing a message..." + "</i></p>")
+      })
+
+    })
   </script>
 </body>
 
