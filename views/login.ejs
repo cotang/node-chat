@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <% include partials/head %>
+</head>
+
+<body>
+  <form class="block-panel" id="loginForm" action="/login" method="post" autocomplete="off">
+    <h2 class="block-panel-heading">Sign in</h2>
+    <input type="email" name="loginEmail" class="form-control credentials" placeholder="Email address" required=""
+      autofocus="">
+    <input type="password" name="loginPassword" class="form-control credentials" placeholder="Password" required="">
+    <!-- <label class="checkbox">
+      <input type="checkbox" name="remember" value="remember" checked> Remember me
+    </label> -->
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+    <a class="btn btn-link" href="/register">Not registered? Sign up here</a>
+  </form>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://code.jquery.com/jquery.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+</body>
+
+</html>

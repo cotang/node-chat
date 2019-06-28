@@ -3,6 +3,8 @@ const router = express.Router();
 const path = require('path');
 const User = require('../models/user');
 
+// ПОСТЫ
+
 router.post('/register',
   (req, res, next) => {
     if (req.body.registerEmail && req.body.registerPassword) {
@@ -10,7 +12,7 @@ router.post('/register',
         email: req.body.registerEmail,
         password: req.body.registerPassword
       }
-      User.create(userData, function (error, user) {
+      User.create(userData, (error, user) => {
         if (error) {
           return next(error);
         } else {
@@ -23,22 +25,20 @@ router.post('/register',
     }
   }
 );
-
 router.post('/login',
   (req, res, next) => {
     if (req.body.loginEmail && req.body.loginPassword) {
       console.log('authenticate')
-      User.authenticate(req.body.loginEmail, req.body.loginPassword, function (error, user) {
+      User.authenticate(req.body.loginEmail, req.body.loginPassword, (error, user) => {
         console.log('authenticate', error, user, req.body.remember)
         if (error || !user) {
           var err = new Error('Wrong email or password.');
           err.status = 401;
           return next(err);
         } else {
-          if (req.body.remember) {
-            req.session.userId = user._id;
-            console.log('req.session', req.session)
-          }
+          // if we don't remember ourselves - ?
+          // if (!req.body.remember) { }
+          req.session.userId = user._id;
           return res.redirect('/lobby');
         }
       });
@@ -47,13 +47,29 @@ router.post('/login',
     }
   }
 );
+router.post('/room',
+  (req, res, next) => {
+    if (req.body.chatName) {
+      // Room.create(userData, (error, user) => {
+      //   if (error) {
+      //     return next(error);
+      //   } else {
+      //     req.session.userId = user._id;
+      //     return res.redirect('/lobby');
+      //   }
+      // }); 
+    }
+    res.send('room created')
+  }
+);
+
 
 
 
 // ГЕТЫ
 
 function authChecker(req, res, next) {
-  User.findById(req.session.userId).exec(function (error, user) {
+  User.findById(req.session.userId).exec((error, user) => {
     if (error) {
       return next(error);
     } else {
@@ -69,10 +85,10 @@ function authChecker(req, res, next) {
 }
 
 // GET for logout logout
-router.get('/logout', function (req, res, next) {
+router.get('/logout', (req, res, next) => {
   if (req.session) {
     // delete session object
-    req.session.destroy(function (err) {
+    req.session.destroy((err) => {
       if (err) {
         return next(err);
       } else {
@@ -82,32 +98,39 @@ router.get('/logout', function (req, res, next) {
   }
 });
 
-// GET get credentials at lobby page (todo:move to lobby)
-router.get('/profile', (req, res, next) =>
-  User.findById(req.session.userId).exec(function (error, user) {
+router.get('/login', authChecker, (req, res) =>
+  res.render('login')
+);
+router.get('/register', authChecker, (req, res) =>
+  res.render('register')
+);
+router.get('/lobby', authChecker, (req, res) =>
+  User.findById(req.session.userId).exec((error, user) => {
     if (!error && user !== null) {
-      res.send(user)
+      res.render('lobby', { user })
     }
   })
 );
+router.get('/room/:id', authChecker, (req, res) => {
+  const id = Number(req.params.id);
+  User.findById(req.session.userId).exec((error, user) => {
+    if (!error && user !== null) {
+      res.render('room', { user, id })
+    }
+  })
+});
+// router.get('/room', authChecker, (req, res) => {
+//   User.findById(req.session.userId).exec((error, user) => {
+//     if (!error && user !== null) {
+//       res.render('room', { user })
+//     }
+//   })
+// });
 
-router.get('/login', authChecker, (req, res) =>
-  res.sendFile(path.join(__dirname, '../public', 'login.html'))
-);
-router.get('/register', authChecker, (req, res) =>
-  res.sendFile(path.join(__dirname, '../public', 'register.html'))
-);
-router.get('/lobby', authChecker, (req, res, next) =>
-  res.sendFile(path.join(__dirname, '../public', 'lobby.html'))
-);
-router.get('/room', authChecker, (req, res) =>
-  res.sendFile(path.join(__dirname, '../public', 'room.html'))
-);
-
-router.get('/', function (req, res) {
+router.get('/', (req, res) => {
   res.redirect('/lobby');
 });
-router.get('*', function (req, res) {
+router.get('*', (req, res) => {
   res.send('<p>Wrong page! Go back to <a href="/lobby">main page</a>.</p>');
 });
 

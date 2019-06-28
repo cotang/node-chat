@@ -16,6 +16,9 @@ db.once('open', function () {
   // we're connected!
 });
 
+// set the view engine to ejs
+app.set('view engine', 'ejs');
+
 //use sessions for tracking logins
 app.use(session({
   secret: 'work hard',
@@ -29,7 +32,7 @@ app.use(session({
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 // static files
-app.use(express.static(__dirname + '/public'))
+app.use(express.static('public'))
 
 
 

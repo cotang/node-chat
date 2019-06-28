@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <% include partials/head %>
+</head>
+
+<body>
+  <div class="block-panel">
+    <p>
+      <span>User</span>
+      <span id="user" class="label label-default"><%= user.email %></span>
+      <a class="pull-right" href="/logout">Logout</a>
+    </p>
+    <h2 class="block-panel-heading">Room #<%= id %></h2>
+    <div class="row message-input">
+      <div class="col-lg-12">
+        <div class="input-group">
+          <span class="input-group-btn">
+            <button class="btn btn-default" type="button">Send</button>
+          </span>
+          <input type="text" class="form-control">
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-body chat-body">
+        <span class="message"><span class="user" style="color: #0A6">User#1</span>: Hello.</span>
+        <span class="message"><span class="user" style="color: #A00">User#2</span>: Hi!</span>
+        <span class="message"><span class="user" style="color: #06F">Alien</span>: Greatings, earthlings! I come in
+          peace. Klaatu barada nikto. Here is my <a href="#">gift</a> to humanity</span>
+        <span class="message"><span class="user" style="color: #A00">User#2</span>: Wow!</span>
+        <span class="message"><span class="user" style="color: #0A6">User#1</span>: Radical, dude!</span>
+      </div>
+    </div>
+  </div>
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://code.jquery.com/jquery.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="/js/bootstrap.min.js"></script>
+  <script>
+
+  </script>
+</body>
+
+</html>
