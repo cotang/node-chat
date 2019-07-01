@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const User = require('../models/user');
+const Room = require('../models/room');
 
 // ПОСТЫ
 
@@ -47,19 +48,26 @@ router.post('/login',
     }
   }
 );
-router.post('/room',
+
+router.post('/lobby',
   (req, res, next) => {
     if (req.body.chatName) {
-      // Room.create(userData, (error, user) => {
-      //   if (error) {
-      //     return next(error);
-      //   } else {
-      //     req.session.userId = user._id;
-      //     return res.redirect('/lobby');
-      //   }
-      // }); 
+      // const num = Room.find().length ? Room.findOne().sort({ _id: -1 }).where('id') + 1 : 1;
+      const roomData = {
+        name: req.body.chatName,
+        url: req.body.url,
+      }
+      Room.create(roomData, (error, room) => {
+        if (error) {
+          return next(error);
+        } else {
+          Room.find().exec(function (err, rooms) {
+            console.log('rooms', rooms)
+            res.json(rooms)
+          });
+        }
+      });
     }
-    res.send('room created')
   }
 );
 
@@ -105,27 +113,31 @@ router.get('/register', authChecker, (req, res) =>
   res.render('register')
 );
 router.get('/lobby', authChecker, (req, res) =>
+  // TODO load users and rooms independently
   User.findById(req.session.userId).exec((error, user) => {
     if (!error && user !== null) {
-      res.render('lobby', { user })
+
+      Room.find().exec(function (err, rooms) {
+        res.render('lobby', { user, rooms })
+      });
     }
   })
 );
-// router.get('/room/:id', authChecker, (req, res) => {
-//   const id = Number(req.params.id);
-//   User.findById(req.session.userId).exec((error, user) => {
-//     if (!error && user !== null) {
-//       res.render('room', { user, id })
-//     }
-//   })
-// });
-router.get('/room', authChecker, (req, res) => {
+router.get('/room/:id', authChecker, (req, res) => {
+  const id = String(req.params.id);
   User.findById(req.session.userId).exec((error, user) => {
     if (!error && user !== null) {
-      res.render('room', { user, id: 0 })
+      res.render('room', { user, id })
     }
   })
 });
+// router.get('/room', authChecker, (req, res) => {
+//   User.findById(req.session.userId).exec((error, user) => {
+//     if (!error && user !== null) {
+//       res.render('room', { user, id: 0 })
+//     }
+//   })
+// });
 
 router.get('/', (req, res) => {
   res.redirect('/lobby');

@@ -14,29 +14,53 @@
     </p>
     <div class="row">
       <div class="col-lg-12">
-        <form id="chatCreationForm" action="/room" method="post" autocomplete="off">
+        <form id="chatCreationForm" autocomplete="off">
           <div class="input-group">
             <span class="input-group-btn">
               <button class="btn btn-default" type="submit">Create room</button>
             </span>
-            <input type="text" name="chatName" class="form-control" placeholder="Chat name">
+            <input type="text" id="chatName" class="form-control" placeholder="Chat name">
           </div>
         </form>
       </div>
     </div>
     <h1>Available rooms</h1>
     <div class="list-group">
-      <a href="/room/1" class="list-group-item active">Room #1</a>
-      <a href="/room/2" class="list-group-item">Room #2</a>
-      <a href="/room/3" class="list-group-item">Test room</a>
-      <a href="/room/4" class="list-group-item">Stupid room</a>
-      <a href="/room/5" class="list-group-item">Support room</a>
+      <% rooms.forEach(function(room){ %>
+      <a href="/room/<%= room.url %>" class="list-group-item"><%= room.name %></a>
+      <%  }); %>
     </div>
   </div>
   <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
   <script src="https://code.jquery.com/jquery.js"></script>
   <!-- Include all compiled plugins (below), or include individual files as needed -->
   <script src="/js/bootstrap.min.js"></script>
+  <script>
+    $(function () {
+      $('#chatCreationForm').submit(function (ev) {
+        ev.preventDefault();
+        var chatName = $('#chatName');
+        // TODO - make simple indexes instead of urls
+        var href = chatName.val().toLowerCase().replace(/\s+/g, '-');
+        fetch('/lobby', {
+          method: 'post',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 'chatName': chatName.val(), 'url': href })
+        })
+          .then(response => { return response.json() })
+          .then(response => {
+            if (response.length) {
+              $('.list-group').empty();
+              response.forEach(el => {
+
+                $('.list-group').append('<a href="/room/' + el.url + '" class="list-group-item">' + el.name + '</a>')
+              })
+              chatName.val('');
+            }
+          });
+      });
+    })
+  </script>
 </body>
 
 </html>

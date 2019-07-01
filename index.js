@@ -46,25 +46,32 @@ const server = app.listen(port, () => console.log(`Node app listening on port ${
 
 //socket.io instantiation
 const io = require("socket.io")(server)
-//listen on every connection
-io.on('connection', (socket) => {
-  console.log('New user connected')
 
-  // TODO - перенести изначальное определение юзера на бэкенд
-  //listen on change_username
-  socket.on('change_username', (data) => {
-    socket.username = data.username
-  })
+//listen on connection 'my-namespace'
+const nsp = io.of('/my-namespace');
+nsp.on('connection', (socket) => {
 
-  //listen on new_message
-  socket.on('new_message', (data) => {
-    //broadcast the new message
-    io.sockets.emit('new_message', { message: data.message, className: data.className, username: socket.username });
-  })
+  // Join particular room 
+  socket.on('create', function (room) {
+    socket.join(room);
 
-  //listen on typing
-  socket.on('typing', (data) => {
-    socket.broadcast.emit('typing', { username: socket.username })
-  })
+    // TODO - перенести изначальное определение юзера на бэкенд
+    //listen on change_username
+    socket.on('change_username', (data) => {
+      socket.username = data.username
+    })
 
+    //listen on new_message
+    socket.on('new_message', (data) => {
+      //broadcast the new message
+      nsp.to(room).emit('new_message', { message: data.message, className: data.className, username: socket.username });
+    })
+
+
+    //listen on typing
+    socket.on('typing', (data) => {
+      socket.broadcast.to(room).emit('typing', { username: socket.username })
+    })
+
+  });
 })
