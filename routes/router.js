@@ -52,6 +52,7 @@ router.post('/login',
 router.post('/lobby',
   (req, res, next) => {
     if (req.body.chatName) {
+      // TODO change url to id (how to get readable id?)
       // const num = Room.find().length ? Room.findOne().sort({ _id: -1 }).where('id') + 1 : 1;
       const roomData = {
         name: req.body.chatName,
@@ -62,7 +63,6 @@ router.post('/lobby',
           return next(error);
         } else {
           Room.find().exec(function (err, rooms) {
-            console.log('rooms', rooms)
             res.json(rooms)
           });
         }
@@ -113,7 +113,7 @@ router.get('/register', authChecker, (req, res) =>
   res.render('register')
 );
 router.get('/lobby', authChecker, (req, res) =>
-  // TODO load users and rooms independently
+  // TODO load users and rooms independently ?
   User.findById(req.session.userId).exec((error, user) => {
     if (!error && user !== null) {
 
@@ -124,20 +124,17 @@ router.get('/lobby', authChecker, (req, res) =>
   })
 );
 router.get('/room/:id', authChecker, (req, res) => {
-  const id = String(req.params.id);
+  const url = String(req.params.id);
   User.findById(req.session.userId).exec((error, user) => {
     if (!error && user !== null) {
-      res.render('room', { user, id })
+
+      // TODO limit shown entries
+      Room.findOne({ name: url }).exec(function (err, room) {
+        res.render('room', { user, url, messages: room.messages })
+      });
     }
   })
 });
-// router.get('/room', authChecker, (req, res) => {
-//   User.findById(req.session.userId).exec((error, user) => {
-//     if (!error && user !== null) {
-//       res.render('room', { user, id: 0 })
-//     }
-//   })
-// });
 
 router.get('/', (req, res) => {
   res.redirect('/lobby');

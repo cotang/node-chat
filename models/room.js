@@ -1,5 +1,18 @@
 const mongoose = require('mongoose');
 
+const HistoryMessageSchema = new mongoose.Schema({
+  author: {
+    type: String
+  },
+  className: {
+    type: String
+  },
+  message: {
+    type: String
+  }
+},
+  { timestamps: { createdAt: 'created_at' } }
+);
 const RoomSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -17,10 +30,9 @@ const RoomSchema = new mongoose.Schema({
   //   type: Number,
   //   unique: true,
   //   required: true
-  // }
+  // },
+  messages: [HistoryMessageSchema]
 });
-
-RoomSchema.index({ name: 1, type: -1 });
 
 const Room = mongoose.model('Room', RoomSchema);
 module.exports = Room;

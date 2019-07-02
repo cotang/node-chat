@@ -52,7 +52,6 @@
             if (response.length) {
               $('.list-group').empty();
               response.forEach(el => {
-
                 $('.list-group').append('<a href="/room/' + el.url + '" class="list-group-item">' + el.name + '</a>')
               })
               chatName.val('');

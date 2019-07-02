@@ -5,6 +5,7 @@ const port = 8100;
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
+const Room = require('./models/room');
 
 //connect to MongoDB
 mongoose.connect('mongodb://localhost/testNode');
@@ -51,22 +52,30 @@ const io = require("socket.io")(server)
 const nsp = io.of('/my-namespace');
 nsp.on('connection', (socket) => {
 
-  // Join particular room 
-  socket.on('create', function (room) {
-    socket.join(room);
+  //listen on set_username
+  socket.on('set_username', name => socket.username = name)
 
-    // TODO - перенести изначальное определение юзера на бэкенд
-    //listen on change_username
-    socket.on('change_username', (data) => {
-      socket.username = data.username
-    })
+  // join particular room 
+  socket.on('join_room', function (room) {
+    socket.join(room);
 
     //listen on new_message
     socket.on('new_message', (data) => {
-      //broadcast the new message
-      nsp.to(room).emit('new_message', { message: data.message, className: data.className, username: socket.username });
+      const messageData = {
+        message: data.message,
+        className: data.className,
+        author: socket.username
+      }
+      // write to DB
+      Room.findOneAndUpdate({ name: room },
+        {
+          $push: { "messages": messageData }
+        },
+        (error, message) => {
+          //broadcast the new message
+          nsp.to(room).emit('new_message', messageData);
+        })
     })
-
 
     //listen on typing
     socket.on('typing', (data) => {

@@ -10,9 +10,12 @@
     <p>
       <span>User</span>
       <span id="user" class="label label-default"><%= user.email %></span>
-      <a class="pull-right" href="/logout">Logout</a>
     </p>
-    <h2 class="block-panel-heading">Room #<%= id %></h2>
+    <div class="clearfix">
+      <a class="pull-left" href="/lobby">To all chat rooms</a>
+      <a class="pull-right" href="/logout">Logout</a>
+    </div>
+    <h2 class="block-panel-heading">Room #<%= url %></h2>
     <div class="row message-input">
       <div class="col-lg-12">
         <form id="chatMessageForm" action="" method="" autocomplete="off">
@@ -28,6 +31,11 @@
     <div class="panel panel-default">
       <div class="panel-body chat-body">
         <div id="process"></div>
+        <!-- here go messages -->
+        <% messages.forEach(function(msg){ %>
+        <span class='message'><span class='user text-<%= msg.className %>'><%= msg.author %>:</span>
+          <%= msg.message %></span>
+        <%  }); %>
       </div>
     </div>
   </div>
@@ -37,7 +45,7 @@
   <script src="/js/bootstrap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
   <script>
-    function defineClass() {
+    function defineColorClass() {
       var min = 1;
       var max = 6;
       var random = Math.floor(Math.random() * (max - min)) + min;
@@ -56,34 +64,31 @@
           return 'muted';
       }
     }
-    var alertClass = defineClass();
+    var textColor = defineColorClass();
 
     $(function () {
       var socket = io.connect('http://localhost:8100/my-namespace');
       var messageField = $('#chatMessage');
-
       // Room creation
       socket.on('connect', function () {
-        socket.emit('create', '<%- id %>');
+        // TODO may be this data should be received on backend from db ?
+        socket.emit('set_username', '<%- user.email %>')
+        socket.emit('join_room', '<%- url %>');
       });
-
-      // TODO - перенести изначальное определение юзера на бэкенд
-      socket.emit('change_username', { username: $("#user").text() })
 
       //Emit message
       $('#chatMessageForm').submit(function (ev) {
         ev.preventDefault();
         if (messageField.val()) {
-          socket.emit('new_message', { message: messageField.val(), className: alertClass })
+          socket.emit('new_message', { message: messageField.val(), className: textColor })
         }
       });
       //Listen on new_message
       socket.on("new_message", (data) => {
         $('#process').html('');
         messageField.val('');
-        $('.chat-body').append("<span class='message'><span class='user text-" + data.className + "'>" + data.username + "</span>: " + data.message + "</span>")
+        $('.chat-body').append("<span class='message'><span class='user text-" + data.className + "'>" + data.author + "</span>: " + data.message + "</span>")
       });
-
 
       //Emit typing
       messageField.bind("keypress", () => {
