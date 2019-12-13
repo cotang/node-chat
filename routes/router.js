@@ -1,11 +1,33 @@
 const express = require('express');
-const router = express.Router();
+const multer  = require('multer');
 const path = require('path');
+const router = express.Router();
 const User = require('../models/user');
 const Room = require('../models/room');
 
-// ПОСТЫ
+// Files storage
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname)
+  }
+});
+var upload = multer({ storage: storage });
 
+router.post('/uploadfile', upload.single('file'), (req, res, next) => {
+  const file = req.file
+  if (!file) {
+    const error = new Error('Please upload a file')
+    error.httpStatusCode = 400
+    return next(error)
+  }
+  res.send(file)
+})
+
+
+// ПОСТЫ
 router.post('/register',
   (req, res, next) => {
     if (req.body.registerEmail && req.body.registerPassword) {
@@ -130,7 +152,9 @@ router.get('/room/:id', authChecker, (req, res) => {
 
       // TODO limit shown entries
       Room.findOne({ name: url }).exec(function (err, room) {
-        res.render('room', { user, url, messages: room.messages })
+        console.log('room!!! ', room);
+        var messages = room ? room.messages : [];
+        res.render('room', { user, url, messages })
       });
     }
   })

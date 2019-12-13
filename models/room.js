@@ -9,6 +9,9 @@ const HistoryMessageSchema = new mongoose.Schema({
   },
   message: {
     type: String
+  },
+  file: {
+    type: String
   }
 },
   { timestamps: { createdAt: 'created_at' } }

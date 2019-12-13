@@ -18,12 +18,15 @@
     <h2 class="block-panel-heading">Room #<%= url %></h2>
     <div class="row message-input">
       <div class="col-lg-12">
-        <form id="chatMessageForm" action="" method="" autocomplete="off">
+        <form id="chatMessageForm" action="/uploadfile" method="post" autocomplete="off" enctype="multipart/form-data">
           <div class="input-group">
             <span class="input-group-btn">
               <button class="btn btn-default" type="submit">Send</button>
             </span>
             <input type="text" id="chatMessage" class="form-control" placeholder="Write your message">
+          </div>
+          <div class="form-group">
+            <input type="file" name="file" id="inputFile">
           </div>
         </form>
       </div>
@@ -33,12 +36,17 @@
         <div id="process"></div>
         <!-- here go messages -->
         <% messages.forEach(function(msg){ %>
-        <span class='message'><span class='user text-<%= msg.className %>'><%= msg.author %>:</span>
-          <%= msg.message %></span>
-        <%  }); %>
+          <div class='message'>
+            <span class='user text-<%= msg.className %>'><%= msg.author %>:</span>
+            <span><%= msg.message %></span>
+            <% if (msg.file) { %> <a href="../<%= msg.file %>" class='text-<%= msg.className %>'><%= msg.file %></a> <% } %>
+          </div>
+        <% }) %>
       </div>
     </div>
   </div>
+
+
   <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
   <script src="https://code.jquery.com/jquery.js"></script>
   <!-- Include all compiled plugins (below), or include individual files as needed -->
@@ -69,6 +77,7 @@
     $(function () {
       var socket = io.connect('http://localhost:8100/my-namespace');
       var messageField = $('#chatMessage');
+      var fileField = $('#inputFile');
       // Room creation
       socket.on('connect', function () {
         // TODO may be this data should be received on backend from db ?
@@ -79,15 +88,29 @@
       //Emit message
       $('#chatMessageForm').submit(function (ev) {
         ev.preventDefault();
-        if (messageField.val()) {
-          socket.emit('new_message', { message: messageField.val(), className: textColor })
-        }
+        // file to backend
+        $.ajax({
+            type: 'POST',
+            url: $(this).attr('action'),
+            data: new FormData(this),
+            processData: false,
+            contentType: false,
+        })
+        .done(function(data){
+          $('#inputFile').val("");
+          // sockets
+          if (messageField.val()) {
+            socket.emit('new_message', { message: messageField.val(), className: textColor, file: data.filename })
+          }
+        });
       });
       //Listen on new_message
       socket.on("new_message", (data) => {
         $('#process').html('');
         messageField.val('');
-        $('.chat-body').append("<span class='message'><span class='user text-" + data.className + "'>" + data.author + "</span>: " + data.message + "</span>")
+        var file = data.file ? " <a href='../" + data.file + "' class='text-" + data.className + "''>" + data.file + "</a>" : "" ;
+        var text = "<div class='message'><span class='user text-" + data.className + "'>" + data.author + ": </span><span>" + data.message + "</span>"+ file +"</div>";
+        $('.chat-body').append(text)
       });
 
       //Emit typing

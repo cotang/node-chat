@@ -1,9 +1,9 @@
 const express = require('express');
-const app = express();
 const bodyParser = require('body-parser');
-const port = 8100;
 const mongoose = require('mongoose');
 const session = require('express-session');
+const port = 8100;
+const app = express();
 const MongoStore = require('connect-mongo')(session);
 const Room = require('./models/room');
 
@@ -34,6 +34,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 // static files
 app.use(express.static('public'))
+app.use(express.static('uploads'))
 
 // Routing
 // include routes
@@ -64,6 +65,7 @@ nsp.on('connection', (socket) => {
       const messageData = {
         message: data.message,
         className: data.className,
+        file: data.file,
         author: socket.username
       }
       // write to DB
