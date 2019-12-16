@@ -1,6 +1,5 @@
 const express = require('express');
-const multer  = require('multer');
-const path = require('path');
+const multer = require('multer');
 const router = express.Router();
 const User = require('../models/user');
 const Room = require('../models/room');

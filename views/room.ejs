@@ -36,11 +36,12 @@
         <div id="process"></div>
         <!-- here go messages -->
         <% messages.forEach(function(msg){ %>
-          <div class='message'>
-            <span class='user text-<%= msg.className %>'><%= msg.author %>:</span>
-            <span><%= msg.message %></span>
-            <% if (msg.file) { %> <a href="../<%= msg.file %>" class='text-<%= msg.className %>'><%= msg.file %></a> <% } %>
-          </div>
+        <div class='message'>
+          <span class='user text-<%= msg.className %>'><%= msg.author %>:</span>
+          <span><%= msg.message %></span>
+          <% if (msg.file) { %> <a href="../<%= msg.file %>"
+            class='text-<%= msg.className %>'><small><%= msg.file %></small></a> <% } %>
+        </div>
         <% }) %>
       </div>
     </div>
@@ -77,7 +78,6 @@
     $(function () {
       var socket = io.connect('http://localhost:8100/my-namespace');
       var messageField = $('#chatMessage');
-      var fileField = $('#inputFile');
       // Room creation
       socket.on('connect', function () {
         // TODO may be this data should be received on backend from db ?
@@ -90,26 +90,26 @@
         ev.preventDefault();
         // file to backend
         $.ajax({
-            type: 'POST',
-            url: $(this).attr('action'),
-            data: new FormData(this),
-            processData: false,
-            contentType: false,
+          type: 'POST',
+          url: $(this).attr('action'),
+          data: new FormData(this),
+          processData: false,
+          contentType: false,
         })
-        .done(function(data){
-          $('#inputFile').val("");
-          // sockets
-          if (messageField.val()) {
-            socket.emit('new_message', { message: messageField.val(), className: textColor, file: data.filename })
-          }
-        });
+          .done(function (data) {
+            $('#inputFile').val("");
+            // sockets
+            if (messageField.val()) {
+              socket.emit('new_message', { message: messageField.val(), className: textColor, file: data.filename })
+            }
+          });
       });
       //Listen on new_message
       socket.on("new_message", (data) => {
         $('#process').html('');
         messageField.val('');
-        var file = data.file ? " <a href='../" + data.file + "' class='text-" + data.className + "''>" + data.file + "</a>" : "" ;
-        var text = "<div class='message'><span class='user text-" + data.className + "'>" + data.author + ": </span><span>" + data.message + "</span>"+ file +"</div>";
+        var file = data.file ? " <a href='../" + data.file + "' class='text-" + data.className + "'><small>" + data.file + "</small></a>" : "";
+        var text = "<div class='message'><span class='user text-" + data.className + "'>" + data.author + ": </span><span>" + data.message + "</span>" + file + "</div>";
         $('.chat-body').append(text)
       });
 
